@@ -1,11 +1,49 @@
 #!/bin/bash
 
-TARGET_VERSION=$1
-LOCATION=$2
+TARGET_VERSION=""
+PREFIX=""
+WITH_CPANM=1
+CPANM_VERSION=""
+WITH_CARTON=1
+CARTON_VERSION=""
 
-if [ "x"$TARGET_VERSION = "x-h" -o "x"$TARGET_VERSION = "x--help" -o "x"$LOCATION = "x" ]; then
-    echo "[usage] perl-install VERSION LOCATION"
-    echo "  ex: perl-install 5.16.3 ~/local/perl-5.16"
+usage() {
+    echo "Usage:"
+    echo "  $0 --target VERSION --prefix PATH [OPTIONS...]"
+    echo "Options:"
+    echo "  --help                     display this help and exit"
+    echo "  --target VERSION           target version to install"
+    echo "  --prefix PATH              path prefix"
+    echo "  --with-cpanm               install cpanm [default]"
+    echo "  --without-cpanm            don't install cpanm"
+    echo "  --cpanm-version VERSION    specify cpanm version"
+    echo "  --with-carton              install carton [default]"
+    echo "  --without-carton           don't install carton"
+    echo "  --carton-version VERSION   specify carton version"
+}
+
+OPTS=`getopt -o h --long help,target:,prefix:,with-cpanm,without-cpanm,cpanm-version:,with-carton,without-carton,carton-version: -- "$@"`
+[ $? -ne 0 ] && usage && exit 1
+
+eval set -- "$OPTS"
+
+while true; do
+    case "$1" in
+        --help)           usage && exit 0;;
+        --target)         TARGET_VERSION="$2"; shift 2;;
+        --prefix)         PREFIX="$2";         shift 2;;
+        --with-cpanm)     WITH_CPANM=1;        shift;;
+        --without-cpanm)  WITH_CPANM=0;        shift;;
+        --cpanm-version)  CPANM_VERSION="$2";  shift 2;;
+        --with-carton)    WITH_CARTON=1;       shift;;
+        --without-carton) WITH_CARTON=0;       shift;;
+        --carton-version) CARTON_VERSION="$2"; shift 2;;
+        --) shift; break;;
+    esac
+done
+
+if [ "x"$TARGET_VERSION = "x" -o "x"$PREFIX = "x" ]; then
+    usage
     exit 0
 fi
 
@@ -18,19 +56,28 @@ curl -s -L http://cpanmin.us/ > ./bin/fatpack_cpanm
 set +e
 
 echo "Start to build perl $TARGET_VERSION ..."
-perl ./bin/perl-build -DDEBUGGING=-g $TARGET_VERSION $LOCATION > /tmp/$USER-perl-install.log 2>&1
+perl ./bin/perl-build -DDEBUGGING=-g $TARGET_VERSION $PREFIX > /tmp/$USER-perl-install.log 2>&1
 RETVAL=$?
 if [ $RETVAL != 0 ]; then
     echo "perl-build failed. see log: /tmp/$USER-perl-install.log"
     exit 1
 fi
 
-$LOCATION/bin/perl ./bin/fatpack_cpanm --notest App::cpanminus Carton Server::Starter > /tmp/$USER-perl-install-cpanm.log 2>&1
-RETVAL=$?
-if [ $RETVAL != 0 ]; then
-    echo "failed to install cpanm/carton. see log: /tmp/$USER-perl-install-cpanm.log"
-    exit 2
+if [ $WITH_CPANM -eq 1 ]; then
+    [ x$CPANM_VERSION != "x" ] && CPANM_VERSION="@$CPANM_VERSION"
+    CARTON=""
+    if [ $WITH_CARTON -eq 1 ]; then
+        CARTON="Carton"
+        [ x$CARTON_VERSION != "x" ] && CARTON_VERSION="@$CARTON_VERSION"
+    fi
+
+    $PREFIX/bin/perl ./bin/fatpack_cpanm --notest App::cpanminus$CPANM_VERSION $CARTON$CARTON_VERSION > /tmp/$USER-perl-install-cpanm.log 2>&1
+    RETVAL=$?
+    if [ $RETVAL != 0 ]; then
+        echo "failed to install cpanm/carton. see log: /tmp/$USER-perl-install-cpanm.log"
+        exit 2
+    fi
 fi
 
-echo "perl $TARGET_VERSION (and cpanm/carton) successfully installed on $LOCATION"
-echo "To use this perl, do 'export PATH=$LOCATION/bin:\$PATH'."
+echo "perl $TARGET_VERSION (and cpanm/carton) successfully installed on $PREFIX"
+echo "To use this perl, do 'export PATH=$PREFIX/bin:\$PATH'."
