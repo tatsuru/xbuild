@@ -1,12 +1,35 @@
 #!/bin/bash
 
-TARGET_VERSION=$1
-LOCATION=$2
-CONFIGURE_OPTIONS=${@:4:($#-3)}
+TARGET_VERSION=""
+PREFIX=""
+CONFIGURE_OPTIONS=""
 
-if [ "x"$TARGET_VERSION = "x-h" -o "x"$TARGET_VERSION = "x--help" -o "x"$LOCATION = "x" ]; then
-    echo "[usage] php-install VERSION LOCATION -- CONFIGURE_OPTIONS"
-    echo "  ex: php-install 5.5snapshot ~/local/php-5.5snapshot -- --with-pear"
+usage() {
+    echo "Usage:"
+    echo "  $0 --target VERSION --prefix PATH [OPTIONS...] [-- CONFIGURE_OPTIONS]"
+    echo "Options:"
+    echo "  --help                     display this help and exit"
+    echo "  --target VERSION           target version to install"
+    echo "  --prefix PATH              path prefix"
+}
+
+OPTS=`getopt -o h --long help,target:,prefix: -- "$@"`
+[ $? -ne 0 ] && usage && exit 1
+
+eval set -- "$OPTS"
+
+while true; do
+    case "$1" in
+        --help)           usage && exit 0;;
+        --target)         TARGET_VERSION="$2"; shift 2;;
+        --prefix)         PREFIX="$2";         shift 2;;
+        --) shift; break;;
+    esac
+done
+CONFIGURE_OPTIONS=$@
+
+if [ "x"$TARGET_VERSION = "x" -o "x"$PREFIX = "x" ]; then
+    usage
     exit 0
 fi
 
@@ -25,12 +48,12 @@ if [ ! -d ./var/php-build ]; then
 fi
 
 echo "Start to build php $TARGET_VERSION ..."
-PHP_BUILD_CONFIGURE_OPTS=$CONFIGURE_OPTIONS ./var/php-build/bin/php-build $TARGET_VERSION $LOCATION > /tmp/$USER-php-install.log 2>&1
+PHP_BUILD_CONFIGURE_OPTS="$CONFIGURE_OPTIONS" ./var/php-build/bin/php-build $TARGET_VERSION $PREFIX > /tmp/$USER-php-install.log 2>&1
 RETVAL=$?
 if [ $RETVAL != 0 ]; then
     echo "php-build failed. see log: /tmp/$USER-php-install.log"
     exit 1
 fi
 
-echo "php $TARGET_VERSION successfully installed on $LOCATION"
-echo "To use this php, do 'export PATH=$LOCATION/bin:\$PATH'."
+echo "php $TARGET_VERSION successfully installed on $PREFIX"
+echo "To use this php, do 'export PATH=$PREFIX/bin:\$PATH'."

@@ -1,11 +1,33 @@
 #!/bin/bash
 
-TARGET_VERSION=$1
-LOCATION=$2
+TARGET_VERSION=""
+PREFIX=""
 
-if [ "x"$TARGET_VERSION = "x-h" -o "x"$TARGET_VERSION = "x--help" -o "x"$LOCATION = "x" ]; then
-    echo "[usage] python-install VERSION LOCATION"
-    echo "  ex: python-install 2.7.3 ~/local/python-2.7.3"
+usage() {
+    echo "Usage:"
+    echo "  $0 --target VERSION --prefix PATH [OPTIONS...]"
+    echo "Options:"
+    echo "  --help                     display this help and exit"
+    echo "  --target VERSION           target version to install"
+    echo "  --prefix PATH              path prefix"
+}
+
+OPTS=`getopt -o h --long help,target:,prefix: -- "$@"`
+[ $? -ne 0 ] && usage && exit 1
+
+eval set -- "$OPTS"
+
+while true; do
+    case "$1" in
+        --help)           usage && exit 0;;
+        --target)         TARGET_VERSION="$2"; shift 2;;
+        --prefix)         PREFIX="$2";         shift 2;;
+        --) shift; break;;
+    esac
+done
+
+if [ "x"$TARGET_VERSION = "x" -o "x"$PREFIX = "x" ]; then
+    usage
     exit 0
 fi
 
@@ -24,12 +46,12 @@ if [ ! -d ./var/python-build ]; then
 fi
 
 echo "Start to build python $TARGET_VERSION ..."
-./var/python-build/bin/python-build $TARGET_VERSION $LOCATION > /tmp/$USER-python-install.log 2>&1
+./var/python-build/bin/python-build $TARGET_VERSION $PREFIX > /tmp/$USER-python-install.log 2>&1
 RETVAL=$?
 if [ $RETVAL != 0 ]; then
     echo "python-build failed. see log: /tmp/$USER-python-install.log"
     exit 1
 fi
 
-echo "python $TARGET_VERSION successfully installed on $LOCATION"
-echo "To use this python, do 'export PATH=$LOCATION/bin:\$PATH'."
+echo "python $TARGET_VERSION successfully installed on $PREFIX"
+echo "To use this python, do 'export PATH=$PREFIX/bin:\$PATH'."
