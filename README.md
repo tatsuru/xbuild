@@ -13,30 +13,30 @@ Supports:
 
 Install perl (ex: 5.16.3) (and cpanm/carton/start_server)
 
-    xbuild/perl-install 5.16.3 ~/local/perl-5.16
+    xbuild/perl-install --target 5.16.3 --prefix ~/local/perl-5.16
 
 Install ruby (ex: 2.0.0-p0) (and bundler)
 
-    xbuild/ruby-install 2.0.0-p0 ~/local/ruby-2.0.0
+    xbuild/ruby-install --target 2.0.0-p0 --prefix ~/local/ruby-2.0.0
 
 Install node.js (ex: v0.10.1)
 
-    xbuild/node-install v0.10.1 ~/local/node-v0.10
+    xbuild/node-install --target v0.10.1 --prefix ~/local/node-v0.10
 
 Install PHP (ex: 5.5.0beta2)
 
-    xbuild/php-install 5.5.0beta2 ~/local/php-5.5.0beta2
+    xbuild/php-install --target 5.5.0beta2 --prefix ~/local/php-5.5.0beta2
     # with some build options
-    xbuild/php-install 5.5.0beta2 ~/local/php-5.5.0beta2 -- --with-pear --without-openssl
+    xbuild/php-install --target 5.5.0beta2 --prefix ~/local/php-5.5.0beta2 -- --with-pear --without-openssl
 
 Install Python (ex: 2.7.3)
 
-    xbuild/python-install 2.7.3 ~/local/python-2.7.3
+    xbuild/python-install --target 2.7.3 --prefix ~/local/python-2.7.3
 
 To update minor version, overwrite simply.
 
-    xbuild/node-install v0.10.0 ~/local/node-v0.10
-    xbuild/node-install v0.10.1 ~/local/node-v0.10
+    xbuild/node-install --target v0.10.0 --prefix ~/local/node-v0.10
+    xbuild/node-install --target v0.10.1 --prefix ~/local/node-v0.10
     
     local/node-v0.10/bin/node -v #=> v0.10.1
     #
@@ -46,7 +46,7 @@ Or, you can use `install` command simply.
 
     # xbuild/install LANG VERSION PATH [OPTIONS]
     #
-    xbuild/install ruby 2.0.0-p0 ~/local/ruby-2.0.0
+    xbuild/install ruby --target 2.0.0-p0 --prefix ~/local/ruby-2.0.0
 
 ## How to use
 
