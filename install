@@ -5,4 +5,4 @@ version=$2
 location=$3
 rest=${@:4}
 current=$(dirname $0)
-exec "$current/${lang}-install" --target "$version" --prefix "$location" "$rest"
+exec "$current/${lang}-install" "$version" "$location" "$rest"

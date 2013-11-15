@@ -1,19 +1,13 @@
 #!/bin/bash
 
-TARGET_VERSION=""
-PREFIX=""
-CONFIGURE_OPTIONS=""
-
 usage() {
     echo "Usage:"
-    echo "  $0 --target VERSION --prefix PATH [OPTIONS...] [-- CONFIGURE_OPTIONS]"
+    echo "  $0 VERSION LOCATION [OPTIONS...] [-- CONFIGURE_OPTIONS]"
     echo "Options:"
     echo "  --help                     display this help and exit"
-    echo "  --target VERSION           target version to install"
-    echo "  --prefix PATH              path prefix"
 }
 
-OPTS=`getopt -o h --long help,target:,prefix: -- "$@"`
+OPTS=`getopt -o h --long help -- "$@"`
 [ $? -ne 0 ] && usage && exit 1
 
 eval set -- "$OPTS"
@@ -21,12 +15,13 @@ eval set -- "$OPTS"
 while true; do
     case "$1" in
         --help)           usage && exit 0;;
-        --target)         TARGET_VERSION="$2"; shift 2;;
-        --prefix)         PREFIX="$2";         shift 2;;
         --) shift; break;;
     esac
 done
-CONFIGURE_OPTIONS=$@
+
+TARGET_VERSION=$1
+PREFIX=$2
+CONFIGURE_OPTIONS=${@:4:($#-3)}
 
 if [ "x"$TARGET_VERSION = "x" -o "x"$PREFIX = "x" ]; then
     usage

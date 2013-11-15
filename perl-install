@@ -1,7 +1,5 @@
 #!/bin/bash
 
-TARGET_VERSION=""
-PREFIX=""
 WITH_CPANM=1
 CPANM_VERSION=""
 WITH_CARTON=1
@@ -9,11 +7,9 @@ CARTON_VERSION=""
 
 usage() {
     echo "Usage:"
-    echo "  $0 --target VERSION --prefix PATH [OPTIONS...]"
+    echo "  $0 VERSION LOCATION [OPTIONS...]"
     echo "Options:"
     echo "  --help                     display this help and exit"
-    echo "  --target VERSION           target version to install"
-    echo "  --prefix PATH              path prefix"
     echo "  --with-cpanm               install cpanm [default]"
     echo "  --without-cpanm            don't install cpanm"
     echo "  --cpanm-version VERSION    specify cpanm version"
@@ -22,7 +18,7 @@ usage() {
     echo "  --carton-version VERSION   specify carton version"
 }
 
-OPTS=`getopt -o h --long help,target:,prefix:,with-cpanm,without-cpanm,cpanm-version:,with-carton,without-carton,carton-version: -- "$@"`
+OPTS=`getopt -o h --long help,with-cpanm,without-cpanm,cpanm-version:,with-carton,without-carton,carton-version: -- "$@"`
 [ $? -ne 0 ] && usage && exit 1
 
 eval set -- "$OPTS"
@@ -30,8 +26,6 @@ eval set -- "$OPTS"
 while true; do
     case "$1" in
         --help)           usage && exit 0;;
-        --target)         TARGET_VERSION="$2"; shift 2;;
-        --prefix)         PREFIX="$2";         shift 2;;
         --with-cpanm)     WITH_CPANM=1;        shift;;
         --without-cpanm)  WITH_CPANM=0;        shift;;
         --cpanm-version)  CPANM_VERSION="$2";  shift 2;;
@@ -41,6 +35,9 @@ while true; do
         --) shift; break;;
     esac
 done
+
+TARGET_VERSION=$1
+PREFIX=$2
 
 if [ "x"$TARGET_VERSION = "x" -o "x"$PREFIX = "x" ]; then
     usage
